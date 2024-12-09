@@ -1,35 +1,50 @@
 const CACHE_NAME = "flashlight-pwa-cache-v1";
-
 console.log("Service Worker");
 
-self.addEventListener('push', e => {
-    const data = e.data.json();
-    console.log(data);
-    self.registration.showNotification(data.title, {
-        body: data.message,
-        icon: 'https://i.pinimg.com/736x/58/b0/88/58b088ad4b6d6c4403170a5cb44ab5a2.jpg'
-    });
-});
+// Función para registrar dinámicamente los archivos necesarios para el caché
+const dynamicUrlsToCache = () => {
+  const baseFiles = [
+    "/",
+    "/index.html",
+    "/stylePrincipal.css",
+    "/css/styleIndex.css",
+    "/js/script.js",
+    "/img/Naruto.jpg",
+    "/img/Kanye.jpg"
+  ];
 
-const urlsToCache = [
-  "/",
-  "/index.html",
-  "/css/styleIndex.css", 
-  "/css/styleAcercaDelProyecto.css",
-  "/css/styleCrud.css",
-  "/css/styleFlash.css", 
-  "/js/script.js",
-  "/js/scriptFlash.js",
-  "/img/Naruto.jpg",
-  "/img/Kanye.jpg"
-];
+  // Recorrer carpetas específicas y añadir archivos comunes (opcionalmente, desde un backend o script dinámico)
+  const folders = ["pages", "css", "js", "img"];
+  folders.forEach(folder => {
+    if (folder === "pages") {
+      baseFiles.push(
+        "/pages/acercaDelProyecto.html",
+        "/pages/crudTareas.html",
+        "/pages/flash.html",
+        "/pages/huella.html"
+      );
+    } else if (folder === "css") {
+      baseFiles.push(
+        "/css/styleAcercaDelProyecto.css",
+        "/css/styleCrud.css",
+        "/css/styleFlash.css"
+      );
+    }
+  });
+
+  return baseFiles;
+};
+
+const urlsToCache = dynamicUrlsToCache();
 
 // Instalación del Service Worker
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log("Archivos cacheados");
-      return cache.addAll(urlsToCache);
+      console.log("Cache opened and files added:", CACHE_NAME);
+      return cache.addAll(urlsToCache).catch((error) => {
+        console.error("Error caching files:", error);
+      });
     })
   );
 });
@@ -41,7 +56,7 @@ self.addEventListener("activate", (event) => {
       Promise.all(
         cacheNames.map((cache) => {
           if (cache !== CACHE_NAME) {
-            console.log("Eliminando caché antigua:", cache);
+            console.log("Deleting old cache:", cache);
             return caches.delete(cache);
           }
         })
@@ -54,6 +69,11 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
+      if (response) {
+        console.log("Serving from cache:", event.request.url);
+      } else {
+        console.log("Fetching from network:", event.request.url);
+      }
       return response || fetch(event.request);
     })
   );

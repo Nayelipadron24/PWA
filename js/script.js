@@ -1,18 +1,16 @@
 const PUBLIC_VAPID_KEY =
   "BBxLyh0vFImcZG65K6F4wZv17fbd501Jm1gxxuQLOJCsk6Pq3xJP_wmV9_vgqTcVk-l1-wadN3spEApWaWgASYE";
 
-// if ("serviceWorker" in navigator) {
-//   window.addEventListener("load", () => {
-//     navigator.serviceWorker
-//       .register("/service-worker.js")
-//       .then((registration) => {
-//         console.log("Service Worker registrado con éxito:", registration.scope);
-//       })
-//       .catch((error) => {
-//         console.log("Error al registrar el Service Worker:", error);
-//       });
-//   });
-// }
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(registration => {
+        console.log('Service Worker registrado con éxito:', registration);
+      })
+      .catch(error => {
+        console.log('Error al registrar el Service Worker:', error);
+      });
+  }
+  
 
 const subscription = async () => {
   try {
